@@ -30,7 +30,7 @@ class BaseAsset(IAsset):
         self.__size_kb = size_kb
         self.__status = FileStatus.NEW
 
-    # Використання властивостей (properties) для безпечного доступу
+    # Використання властивостей для безпечного доступу
     @property
     def name(self) -> str:
         """Гетер для отримання імені файлу."""
@@ -77,3 +77,43 @@ class CodeAsset(BaseAsset):
     def get_info(self) -> str:
         base_info = super().get_info()
         return f"{base_info} | Lang: {self.language}"
+
+    class ProjectManager:
+        """
+        Клас-сценарій для демонстрації поліморфізму.
+        Працює з будь-якими об'єктами, що реалізують інтерфейс IAsset.
+        """
+
+        def __init__(self):
+            self.__assets = []
+
+        def add_asset(self, asset: IAsset):
+            """Додає актив до проєкту. Очікує інтерфейс IAsset."""
+            if not isinstance(asset, IAsset):
+                raise TypeError("Об'єкт має реалізовувати інтерфейс IAsset")
+            self.__assets.append(asset)
+
+        def print_project_report(self) -> str:
+            """
+            Сценарій використання поліморфізму:
+            цикл проходить по всіх об'єктах і викликає get_info().
+            Програмі не потрібно знати, чи це VideoAsset, чи CodeAsset.
+            """
+            report_lines = ["--- Звіт по проєкту ---"]
+            for asset in self.__assets:
+                # Ось тут працює поліморфізм:
+                report_lines.append(asset.get_info())
+
+            return "\n".join(report_lines)
+
+    #  Приклад сценарію
+    if __name__ == "__main__":
+        manager = ProjectManager()
+
+        # Додаємо об'єкти різних класів
+        manager.add_asset(BaseAsset("notes.txt", 15))
+        manager.add_asset(VideoAsset("interview.mp4", 1024000, 3600))
+        manager.add_asset(CodeAsset("StatusEvaluator.cs", 45, "C#"))
+
+        # Виконуємо поліморфний виклик
+        print(manager.print_project_report())
